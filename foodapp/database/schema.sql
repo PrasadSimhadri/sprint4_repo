@@ -165,4 +165,4 @@ INSERT INTO order_items (order_id, menu_item_id, quantity, unit_price, subtotal,
 (7, 13, 1, 80.00, 80.00, NULL),
 (8, 4, 1, 280.00, 280.00, NULL);
 
-SELECT 'Database schema created successfully!' as message;
+SELECT 'Database schema created' as message;

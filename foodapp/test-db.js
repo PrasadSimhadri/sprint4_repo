@@ -32,16 +32,16 @@ async function testConnection() {
         console.log('Connection closed.');
         process.exit(0);
     } catch (error) {
-        console.error('MySQL connection failed!');
+        console.error('MySQL connection failed');
         console.error('Error Code:', error.code);
         console.error('Error Message:', error.message);
 
         if (error.code === 'ER_BAD_DB_ERROR') {
-            console.log('\n The database "food_app" does not exist. Create it first!');
+            console.log('\n  database "food_app" does not exist.');
         } else if (error.code === 'ECONNREFUSED') {
-            console.log('\n Make sure MySQL server is running!');
+            console.log('\n Make sure MySQL server is running');
         } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-            console.log('\n Check your username and password!');
+            console.log('\n Check  username and password');
         }
 
         process.exit(1);

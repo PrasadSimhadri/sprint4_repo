@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FoodApp - Order Your Favorite Meals",
+  title: "FoodApp",
   description: "Book your meal slot and order delicious food",
 };
 

@@ -213,7 +213,7 @@ export async function POST(request) {
 
         return Response.json({
             success: true,
-            message: 'Order placed successfully!',
+            message: 'Order placed successfully',
             data: {
                 orderId,
                 orderNumber,

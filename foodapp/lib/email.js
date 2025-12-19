@@ -13,7 +13,7 @@ async function sendWelcomeEmail(userEmail, userName) {
     await transporter.sendMail({
       from: '"FoodApp" <saisimhadri2207@gmail.com>',
       to: userEmail,
-      subject: 'Welcome to FoodApp!',
+      subject: 'Welcome to FoodApp',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -90,15 +90,13 @@ async function sendOrderConfirmationEmail(userEmail, userName, orderDetails) {
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0 0 10px 0;"><strong>Order Number:</strong> ${orderDetails.orderNumber}</p>
             <p style="margin: 0 0 10px 0;"><strong>Pickup Slot:</strong> ${orderDetails.slotTime}</p>
-            <p style="margin: 0;"><strong>Total:</strong> Rs.${orderDetails.total}</p>
           </div>
           
           <h3 style="color: #333;">Order Items:</h3>
           <ul style="color: #666; line-height: 1.8;">${itemsList}</ul>
-          
-          <p style="color: #666; margin-top: 30px;">
-            We'll notify you when your order is ready for pickup!
-          </p>
+
+          <h2 style="margin: 0; text-size: 22px"><strong>Total:</strong> Rs.${orderDetails.total}</h2>
+        
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           

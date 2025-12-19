@@ -23,7 +23,7 @@ async function runSchema() {
 
         await connection.query(sql);
 
-        console.log('Schema executed successfully!');
+        console.log('Schema executed');
 
         const [tables] = await connection.query('SHOW TABLES');
         console.log('\nTables created:');
@@ -40,7 +40,7 @@ async function runSchema() {
         }
 
         await connection.end();
-        console.log('\nDone!');
+        console.log('\nDone');
 
     } catch (error) {
         console.error('Error:', error.message);

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 
@@ -9,10 +10,36 @@ export default function Header() {
     const { user, loading, logout } = useAuth();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const pathname = usePathname();
 
     function handleLogout() {
         logout();
         setShowLogoutConfirm(false);
+    }
+
+    function isActive(path) {
+        if (path === '/') {
+            return pathname === '/';
+        }
+        if (path === '/admin') {
+            return pathname === '/admin';
+        }
+        if (path === '/admin/menu') {
+            return pathname === '/admin/menu';
+        }
+        return pathname.startsWith(path);
+    }
+
+    function getLinkStyle(path) {
+        const active = isActive(path);
+        return {
+            color: active ? '#f97316' : '#888',
+            textDecoration: 'none',
+            fontSize: '14px',
+            fontWeight: active ? 700 : 400,
+            paddingBottom: '4px',
+            borderBottom: active ? '2px solid #f97316' : '2px solid transparent'
+        };
     }
 
     return (
@@ -33,25 +60,40 @@ export default function Header() {
                     margin: '0 auto',
                     padding: '0 20px'
                 }}>
-                    <Link href="/" style={{
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        background: 'linear-gradient(135deg, #f97316, #fb923c)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        textDecoration: 'none'
-                    }}>
-                        FoodApp
-                    </Link>
+                    {!loading && user && user.role === 'admin' ? (
+                        <span style={{
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #f97316, #fb923c)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            FoodApp
+                        </span>
+                    ) : (
+                        <Link href="/" style={{
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #f97316, #fb923c)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            textDecoration: 'none'
+                        }}>
+                            FoodApp
+                        </Link>
+                    )}
 
                     <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                        <Link href="/" style={{ color: '#fff', textDecoration: 'none', fontSize: '14px' }}>Menu</Link>
-
-                        {!loading && user && (
+                        {!loading && user && user.role === 'admin' ? (
                             <>
-                                <Link href="/orders" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>My Orders</Link>
-                                {(user.role === 'admin' || user.role === 'staff') && (
-                                    <Link href="/admin" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>Admin</Link>
+                                <Link href="/admin" style={getLinkStyle('/admin')}>Orders</Link>
+                                <Link href="/admin/menu" style={getLinkStyle('/admin/menu')}>Menu</Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/" style={getLinkStyle('/')}>Menu</Link>
+                                {!loading && user && (
+                                    <Link href="/orders" style={getLinkStyle('/orders')}>My Orders</Link>
                                 )}
                             </>
                         )}

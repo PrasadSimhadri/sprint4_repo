@@ -73,7 +73,7 @@ export async function GET(request, { params }) {
             return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
         }
 
-        const items = await query(`
+        const items = await query(`F
       SELECT oi.*, mi.name as item_name
       FROM order_items oi
       JOIN menu_items mi ON oi.menu_item_id = mi.id

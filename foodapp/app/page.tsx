@@ -40,7 +40,35 @@ export default function Home() {
     return cart.reduce((total, item) => total + item.quantity, 0);
   }
 
-  function handleSelectSlot(slot: Slot) {
+  async function reserveSlot(slotId: number) {
+    try {
+      await fetch('/api/slots/reserve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId, action: 'reserve' })
+      });
+    } catch (error) {
+      console.error('Failed to reserve slot:', error);
+    }
+  }
+
+  async function releaseSlot(slotId: number) {
+    try {
+      await fetch('/api/slots/reserve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId, action: 'release' })
+      });
+    } catch (error) {
+      console.error('Failed to release slot:', error);
+    }
+  }
+
+  async function handleSelectSlot(slot: Slot) {
+    if (selectedSlot && selectedSlot.id !== slot.id) {
+      await releaseSlot(selectedSlot.id);
+    }
+    await reserveSlot(slot.id);
     setSelectedSlot(slot);
   }
 
@@ -50,7 +78,11 @@ export default function Home() {
     }
   }
 
-  function backToMenu() {
+  async function backToMenu() {
+    if (selectedSlot) {
+      await releaseSlot(selectedSlot.id);
+      setSelectedSlot(null);
+    }
     setStep(1);
     setShowEditCart(false);
   }
@@ -235,7 +267,7 @@ export default function Home() {
       )}
 
       {step === 1 ? (
-        <Menu onAddToCart={setCart} initialCart={cart} />
+        <Menu onAddToCart={setCart} />
       ) : (
         <SlotPicker onSelectSlot={handleSelectSlot} selectedSlot={selectedSlot} />
       )}
@@ -358,7 +390,7 @@ export default function Home() {
           }}>
             <div>
               <div style={{ fontSize: '14px', opacity: 0.9 }}>{getCartCount()} items</div>
-              <div style={{ fontSize: '22px', fontWeight: 700 }}>₹{getCartTotal()}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, marginRight:'10px' }}>₹{getCartTotal()}</div>
               {selectedSlot && (
                 <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '2px' }}>
                   Slot #{selectedSlot.id} - {formatTime(selectedSlot.startTime)}
