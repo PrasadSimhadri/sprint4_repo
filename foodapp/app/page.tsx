@@ -1,70 +1,68 @@
+'use client';
+
+import { useState } from 'react';
+import Menu from '@/components/Menu';
+
 export default function Home() {
+  const [cart, setCart] = useState([]);
+
+  function getCartTotal() {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  }
+
+  function getCartCount() {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  }
+
   return (
     <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <section style={{ textAlign: 'center', marginBottom: '60px' }}>
+      <section style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{
-          fontSize: '48px',
+          fontSize: '42px',
           fontWeight: 800,
-          marginBottom: '16px',
+          marginBottom: '12px',
           background: 'linear-gradient(135deg, #f97316, #fb923c)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          Order Delicious Food
+          Our Menu
         </h1>
-        <p style={{ fontSize: '18px', color: '#888', marginBottom: '32px' }}>
-          Select your time slot and order your favorite meals
+        <p style={{ fontSize: '16px', color: '#888' }}>
+          Select items to add to your order
         </p>
       </section>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '24px',
-        marginBottom: '40px'
-      }}>
+      {cart.length > 0 && (
         <div style={{
-          background: '#1a1a1a',
-          border: '1px solid #2a2a2a',
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: 'linear-gradient(135deg, #f97316, #ea580c)',
+          padding: '16px 24px',
           borderRadius: '12px',
-          padding: '24px',
-          textAlign: 'center'
+          boxShadow: '0 10px 40px rgba(249, 115, 22, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          zIndex: 100,
+          cursor: 'pointer'
         }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>1</div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Browse Menu</h3>
-          <p style={{ color: '#888', fontSize: '14px' }}>Explore our delicious menu items</p>
+          <div>
+            <div style={{ fontSize: '14px', opacity: 0.9 }}>{getCartCount()} items</div>
+            <div style={{ fontSize: '20px', fontWeight: 700 }}>₹{getCartTotal()}</div>
+          </div>
+          <div style={{
+            background: 'rgba(255,255,255,0.2)',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontWeight: 600
+          }}>
+            Select Slot
+          </div>
         </div>
+      )}
 
-        <div style={{
-          background: '#1a1a1a',
-          border: '1px solid #2a2a2a',
-          borderRadius: '12px',
-          padding: '24px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>2</div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Pick a Slot</h3>
-          <p style={{ color: '#888', fontSize: '14px' }}>Choose your preferred pickup time</p>
-        </div>
-
-        <div style={{
-          background: '#1a1a1a',
-          border: '1px solid #2a2a2a',
-          borderRadius: '12px',
-          padding: '24px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>3</div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Place Order</h3>
-          <p style={{ color: '#888', fontSize: '14px' }}>Confirm and receive email confirmation</p>
-        </div>
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ color: '#666', fontSize: '14px' }}>
-          Loading menu and time slots...
-        </p>
-      </div>
+      <Menu onAddToCart={setCart} />
     </div>
   );
 }

@@ -89,7 +89,6 @@ CREATE TABLE order_items (
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE
 );
 
-
 INSERT INTO users (name, email, password, phone, role) VALUES
 ('Admin User', 'admin@foodapp.com', '$2b$10$hashedpassword1', '9876543210', 'admin'),
 ('Kitchen Staff 1', 'staff1@foodapp.com', '$2b$10$hashedpassword2', '9876543211', 'staff'),
