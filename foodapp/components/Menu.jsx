@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react';
 
-export default function Menu({ onAddToCart }) {
+export default function Menu({ onAddToCart, initialCart = [] }) {
     const [menu, setMenu] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(initialCart);
 
     useEffect(() => {
         fetchMenu();
     }, []);
+
+    useEffect(() => {
+        setCart(initialCart);
+    }, [initialCart]);
 
     async function fetchMenu() {
         try {

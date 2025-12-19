@@ -10,6 +10,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(true);
     const [cancelling, setCancelling] = useState(null);
+    const [, setTick] = useState(0);
 
     useEffect(() => {
         if (!loading) {
@@ -20,6 +21,13 @@ export default function OrdersPage() {
             }
         }
     }, [user, loading]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick(t => t + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     async function fetchOrders() {
         try {
@@ -77,19 +85,42 @@ export default function OrdersPage() {
         });
     }
 
-    function canCancel(order) {
-        if (['cancelled', 'ready', 'picked_up'].includes(order.status)) return false;
-        const deadline = new Date(order.cancellation_deadline);
-        return new Date() < deadline;
+    function getSlotDateTime(order) {
+        const slotDate = new Date(order.slot_date);
+        const [hours, minutes] = order.start_time.split(':');
+        slotDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        return slotDate;
     }
 
-    function getRemainingCancelTime(order) {
-        if (!canCancel(order)) return null;
-        const deadline = new Date(order.cancellation_deadline);
-        const remaining = Math.max(0, Math.floor((deadline - new Date()) / 1000));
-        const mins = Math.floor(remaining / 60);
+    function canCancel(order) {
+        if (['cancelled', 'ready', 'picked_up'].includes(order.status)) return false;
+
+        const slotDate = getSlotDateTime(order);
+        const cancelDeadline = new Date(slotDate.getTime() - 15 * 60 * 1000);
+        return new Date() < cancelDeadline;
+    }
+
+    function showNoCancellation(order) {
+        if (['cancelled', 'ready', 'picked_up'].includes(order.status)) return false;
+        return !canCancel(order);
+    }
+
+    function getTimeToCancel(order) {
+        const slotDate = getSlotDateTime(order);
+        const cancelDeadline = new Date(slotDate.getTime() - 15 * 60 * 1000);
+        const now = new Date();
+        const remaining = Math.max(0, Math.floor((cancelDeadline - now) / 1000));
+
+        if (remaining <= 0) return null;
+
+        const hours = Math.floor(remaining / 3600);
+        const mins = Math.floor((remaining % 3600) / 60);
         const secs = remaining % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+
+        if (hours > 0) {
+            return `${hours}h ${mins}m left`;
+        }
+        return `${mins}:${secs.toString().padStart(2, '0')} left`;
     }
 
     function getStatusColor(status) {
@@ -207,9 +238,22 @@ export default function OrdersPage() {
                                     >
                                         {cancelling === order.id ? 'Cancelling...' : 'Cancel Order'}
                                     </button>
-                                    <span style={{ fontSize: '12px', color: '#888' }}>
-                                        Cancel within: {getRemainingCancelTime(order)}
+                                    <span style={{ fontSize: '12px', color: '#f59e0b' }}>
+                                        {getTimeToCancel(order)}
                                     </span>
+                                </div>
+                            )}
+
+                            {showNoCancellation(order) && (
+                                <div style={{
+                                    fontSize: '13px',
+                                    color: '#888',
+                                    padding: '8px 12px',
+                                    background: '#2a2a2a',
+                                    borderRadius: '6px',
+                                    display: 'inline-block'
+                                }}>
+                                    Cancellation not available (within 15 mins of pickup)
                                 </div>
                             )}
                         </div>

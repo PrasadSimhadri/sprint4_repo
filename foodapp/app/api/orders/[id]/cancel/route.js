@@ -16,7 +16,10 @@ export async function POST(request, { params }) {
         await connection.beginTransaction();
 
         const [orders] = await connection.execute(
-            'SELECT * FROM orders WHERE id = ? FOR UPDATE',
+            `SELECT o.*, ts.slot_date, ts.start_time 
+       FROM orders o 
+       JOIN time_slots ts ON o.slot_id = ts.id 
+       WHERE o.id = ? FOR UPDATE`,
             [id]
         );
 
@@ -50,16 +53,20 @@ export async function POST(request, { params }) {
         }
 
         const now = new Date();
-        const cancellationDeadline = new Date(order.cancellation_deadline);
+        const slotDate = new Date(order.slot_date);
+        const [hours, minutes] = order.start_time.split(':');
+        slotDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-        if (now > cancellationDeadline && user.role !== 'admin') {
+        const cancelDeadline = new Date(slotDate.getTime() - 15 * 60 * 1000);
+
+        if (now > cancelDeadline && user.role !== 'admin') {
             await connection.rollback();
             connection.release();
 
-            const minutesPassed = Math.floor((now - new Date(order.created_at)) / 60000);
+            const minsToSlot = Math.floor((slotDate - now) / 60000);
             return Response.json({
                 success: false,
-                message: `Cancellation window expired! You can only cancel within 5 minutes of booking. ${minutesPassed} minutes have passed.`
+                message: `Cannot cancel within 15 minutes of pickup time! Your slot is in ${minsToSlot} minutes.`
             }, { status: 400 });
         }
 
@@ -99,7 +106,9 @@ export async function POST(request, { params }) {
         });
 
     } catch (error) {
-        await connection.rollback();
+        try {
+            await connection.rollback();
+        } catch (e) { }
         connection.release();
         return Response.json({
             success: false,

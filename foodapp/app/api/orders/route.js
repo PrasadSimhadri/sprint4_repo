@@ -27,30 +27,30 @@ export async function GET(request) {
         let orders;
         if (user.role === 'admin' || user.role === 'staff') {
             orders = await query(`
-        SELECT o.*, u.name as user_name, u.email as user_email,
-               ts.slot_date, ts.start_time, ts.end_time
-        FROM orders o
-        JOIN users u ON o.user_id = u.id
-        JOIN time_slots ts ON o.slot_id = ts.id
-        ORDER BY o.created_at DESC
-      `);
+                SELECT o.*, u.name as user_name, u.email as user_email,
+                       ts.slot_date, ts.start_time, ts.end_time
+                FROM orders o
+                JOIN users u ON o.user_id = u.id
+                JOIN time_slots ts ON o.slot_id = ts.id
+                ORDER BY o.created_at DESC
+            `);
         } else {
             orders = await query(`
-        SELECT o.*, ts.slot_date, ts.start_time, ts.end_time
-        FROM orders o
-        JOIN time_slots ts ON o.slot_id = ts.id
-        WHERE o.user_id = ?
-        ORDER BY o.created_at DESC
-      `, [user.id]);
+                SELECT o.*, ts.slot_date, ts.start_time, ts.end_time
+                FROM orders o
+                JOIN time_slots ts ON o.slot_id = ts.id
+                WHERE o.user_id = ?
+                ORDER BY o.created_at DESC
+            `, [user.id]);
         }
 
         for (let order of orders) {
             const items = await query(`
-        SELECT oi.*, mi.name as item_name
-        FROM order_items oi
-        JOIN menu_items mi ON oi.menu_item_id = mi.id
-        WHERE oi.order_id = ?
-      `, [order.id]);
+                SELECT oi.*, mi.name as item_name
+                FROM order_items oi
+                JOIN menu_items mi ON oi.menu_item_id = mi.id
+                WHERE oi.order_id = ?
+            `, [order.id]);
             order.items = items;
         }
 
@@ -152,11 +152,11 @@ export async function POST(request) {
         }
 
         const orderNumber = generateOrderNumber();
-        const cancellationDeadline = new Date(Date.now() + 5 * 60 * 1000);
+        const cancellationDeadline = new Date(slotDate.getTime() - 15 * 60 * 1000);
 
         const [orderResult] = await connection.execute(
             `INSERT INTO orders (order_number, user_id, slot_id, total_amount, status, payment_status, special_instructions, cancellation_deadline)
-       VALUES (?, ?, ?, ?, 'confirmed', 'paid', ?, ?)`,
+             VALUES (?, ?, ?, ?, 'confirmed', 'paid', ?, ?)`,
             [orderNumber, user.id, slotId, totalAmount, specialInstructions || null, cancellationDeadline]
         );
 
@@ -165,7 +165,7 @@ export async function POST(request) {
         for (const item of orderItems) {
             await connection.execute(
                 `INSERT INTO order_items (order_id, menu_item_id, quantity, unit_price, subtotal, notes)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [orderId, item.menuItemId, item.quantity, item.unitPrice, item.subtotal, item.notes]
             );
         }
@@ -195,14 +195,21 @@ export async function POST(request) {
         await connection.commit();
         connection.release();
 
-        const [userData] = await query('SELECT name, email FROM users WHERE id = ?', [user.id]);
-
-        sendOrderConfirmationEmail(userData[0].email, userData[0].name, {
-            orderNumber,
-            slotTime: formatTime(slot.start_time),
-            total: totalAmount,
-            items: orderItems
-        });
+        try {
+            const userData = await query('SELECT name, email FROM users WHERE id = ?', [user.id]);
+            if (userData && userData.length > 0) {
+                sendOrderConfirmationEmail(userData[0].email, userData[0].name, {
+                    orderNumber,
+                    orderId,
+                    slotTime: formatTime(slot.start_time),
+                    slotDate: slot.slot_date,
+                    total: totalAmount,
+                    items: orderItems
+                });
+            }
+        } catch (emailError) {
+            console.error('Failed to send email:', emailError);
+        }
 
         return Response.json({
             success: true,
@@ -217,7 +224,9 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        await connection.rollback();
+        try {
+            await connection.rollback();
+        } catch (e) { }
         connection.release();
         return Response.json({
             success: false,

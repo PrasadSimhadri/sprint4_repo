@@ -28,6 +28,7 @@ export default function Home() {
   const [step, setStep] = useState(1);
   const [showEditCart, setShowEditCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{ orderNumber: string; slotTime: string } | null>(null);
 
@@ -77,15 +78,20 @@ export default function Home() {
     return `${hour12}:${minutes} ${ampm}`;
   }
 
-  async function placeOrder() {
+  function handlePlaceOrderClick() {
     if (!user) {
       setShowAuthModal(true);
       return;
     }
+    if (!selectedSlot || cart.length === 0) return;
+    setShowConfirmModal(true);
+  }
 
+  async function confirmAndPlaceOrder() {
     if (!selectedSlot || cart.length === 0) return;
 
     setOrderLoading(true);
+    setShowConfirmModal(false);
 
     try {
       const res = await fetch('/api/orders', {
@@ -114,10 +120,10 @@ export default function Home() {
         setSelectedSlot(null);
         setStep(1);
       } else {
-        alert(data.message);
+        alert(data.message || 'Failed to place order');
       }
     } catch (error) {
-      alert('Failed to place order');
+      alert('Failed to place order. Please try again.');
     } finally {
       setOrderLoading(false);
     }
@@ -127,8 +133,16 @@ export default function Home() {
     return (
       <div style={{ padding: '60px 20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{
-          fontSize: '80px',
-          marginBottom: '24px'
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 24px',
+          fontSize: '40px',
+          color: '#fff'
         }}>
           ✓
         </div>
@@ -221,7 +235,7 @@ export default function Home() {
       )}
 
       {step === 1 ? (
-        <Menu onAddToCart={setCart} />
+        <Menu onAddToCart={setCart} initialCart={cart} />
       ) : (
         <SlotPicker onSelectSlot={handleSelectSlot} selectedSlot={selectedSlot} />
       )}
@@ -388,7 +402,7 @@ export default function Home() {
                 </button>
               ) : selectedSlot ? (
                 <button
-                  onClick={placeOrder}
+                  onClick={handlePlaceOrderClick}
                   disabled={orderLoading}
                   style={{
                     background: '#fff',
@@ -413,6 +427,121 @@ export default function Home() {
                   Pick a slot
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirmModal && selectedSlot && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '16px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '420px'
+          }}>
+            <h2 style={{
+              fontSize: '22px',
+              fontWeight: 700,
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              Confirm Your Order
+            </h2>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '10px 0',
+                borderBottom: '1px solid #2a2a2a',
+                color: '#888',
+                fontSize: '14px'
+              }}>
+                <span>Pickup Time</span>
+                <span style={{ color: '#f97316', fontWeight: 600 }}>
+                  {formatTime(selectedSlot.startTime)}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+                Order Items
+              </h4>
+              {cart.map(item => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '8px 0',
+                    fontSize: '14px'
+                  }}
+                >
+                  <span>{item.quantity}x {item.name}</span>
+                  <span style={{ color: '#22c55e' }}>₹{item.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '16px 0',
+              borderTop: '1px solid #2a2a2a',
+              fontSize: '18px',
+              fontWeight: 700
+            }}>
+              <span>Total</span>
+              <span style={{ color: '#22c55e' }}>₹{getCartTotal()}</span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: 'transparent',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: '8px',
+                  color: '#888',
+                  cursor: 'pointer',
+                  fontSize: '15px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAndPlaceOrder}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: 'linear-gradient(135deg, #f97316, #ea580c)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: 600
+                }}
+              >
+                Confirm Order
+              </button>
             </div>
           </div>
         </div>

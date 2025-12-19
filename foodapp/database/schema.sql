@@ -110,20 +110,20 @@ INSERT INTO menu_categories (name, description, display_order) VALUES
 
 INSERT INTO menu_items (category_id, name, description, price, is_vegetarian, preparation_time) VALUES
 (1, 'Paneer Tikka', 'Marinated cottage cheese grilled to perfection', 180.00, TRUE, 15),
-(1, 'Chicken 65', 'Spicy deep-fried chicken', 220.00, FALSE, 12),
+(1, 'Chicken 65', 'Spicy deep fried chicken', 220.00, FALSE, 12),
 (1, 'Veg Spring Rolls', 'Crispy rolls with vegetable filling', 150.00, TRUE, 10),
-(2, 'Butter Chicken', 'Creamy tomato-based chicken curry', 280.00, FALSE, 20),
+(2, 'Butter Chicken', 'Creamy tomato based chicken curry', 280.00, FALSE, 20),
 (2, 'Paneer Butter Masala', 'Rich and creamy paneer curry', 240.00, TRUE, 18),
-(2, 'Dal Makhani', 'Slow-cooked black lentils', 180.00, TRUE, 25),
-(2, 'Chicken Curry', 'Traditional home-style chicken curry', 250.00, FALSE, 20),
+(2, 'Dal Makhani', 'Slow cooked black lentils', 180.00, TRUE, 25),
+(2, 'Chicken Curry', 'Traditional home style chicken curry', 250.00, FALSE, 20),
 (3, 'Chicken Biryani', 'Fragrant basmati rice with spiced chicken', 300.00, FALSE, 25),
 (3, 'Veg Biryani', 'Aromatic vegetable biryani', 220.00, TRUE, 22),
-(3, 'Egg Fried Rice', 'Wok-tossed rice with eggs and veggies', 180.00, FALSE, 12),
+(3, 'Egg Fried Rice', 'Tossed rice with eggs and veggies', 180.00, FALSE, 12),
 (4, 'Masala Chai', 'Spiced Indian tea', 40.00, TRUE, 5),
 (4, 'Fresh Lime Soda', 'Refreshing lime drink', 60.00, TRUE, 3),
 (4, 'Mango Lassi', 'Sweet mango yogurt drink', 80.00, TRUE, 5),
-(5, 'Gulab Jamun', 'Deep-fried milk dumplings in sugar syrup', 100.00, TRUE, 5),
-(5, 'Ice Cream', 'Choice of vanilla, chocolate, or strawberry', 80.00, TRUE, 2);
+(5, 'Gulab Jamun', 'Deep fried milk dumplings in sugar syrup', 100.00, TRUE, 5),
+(5, 'Ice Cream', 'Choice of vanilla, chocolate or strawberry', 80.00, TRUE, 2);
 
 INSERT INTO time_slots (slot_date, start_time, end_time, max_orders, current_orders, status) VALUES
 (CURDATE(), '11:00:00', '11:20:00', 10, 10, 'full'),
