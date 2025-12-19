@@ -3,12 +3,33 @@
 import { useState } from 'react';
 import Menu from '@/components/Menu';
 import SlotPicker from '@/components/SlotPicker';
+import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/AuthModal';
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface Slot {
+  id: number;
+  startTime: string;
+  endTime: string;
+  date: string;
+  available: number;
+}
 
 export default function Home() {
-  const [cart, setCart] = useState([]);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const { user, token } = useAuth();
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [step, setStep] = useState(1);
   const [showEditCart, setShowEditCart] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<{ orderNumber: string; slotTime: string } | null>(null);
 
   function getCartTotal() {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -18,7 +39,7 @@ export default function Home() {
     return cart.reduce((total, item) => total + item.quantity, 0);
   }
 
-  function handleSelectSlot(slot) {
+  function handleSelectSlot(slot: Slot) {
     setSelectedSlot(slot);
   }
 
@@ -33,27 +54,134 @@ export default function Home() {
     setShowEditCart(false);
   }
 
-  function updateCartItem(itemId, change) {
+  function updateCartItem(itemId: number, change: number) {
     const newCart = cart.map(item => {
       if (item.id === itemId) {
         const newQuantity = item.quantity + change;
         return newQuantity > 0 ? { ...item, quantity: newQuantity } : null;
       }
       return item;
-    }).filter(Boolean);
+    }).filter((item): item is CartItem => item !== null);
     setCart(newCart);
   }
 
-  function removeFromCart(itemId) {
+  function removeFromCart(itemId: number) {
     setCart(cart.filter(item => item.id !== itemId));
   }
 
-  function formatTime(timeStr) {
+  function formatTime(timeStr: string) {
     const [hours, minutes] = timeStr.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
+  }
+
+  async function placeOrder() {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (!selectedSlot || cart.length === 0) return;
+
+    setOrderLoading(true);
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          slotId: selectedSlot.id,
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity
+          }))
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setOrderSuccess({
+          orderNumber: data.data.orderNumber,
+          slotTime: data.data.slotTime
+        });
+        setCart([]);
+        setSelectedSlot(null);
+        setStep(1);
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      alert('Failed to place order');
+    } finally {
+      setOrderLoading(false);
+    }
+  }
+
+  if (orderSuccess) {
+    return (
+      <div style={{ padding: '60px 20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{
+          fontSize: '80px',
+          marginBottom: '24px'
+        }}>
+          ✓
+        </div>
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: 700,
+          marginBottom: '16px',
+          color: '#22c55e'
+        }}>
+          Order Placed Successfully!
+        </h1>
+        <p style={{ color: '#888', marginBottom: '32px' }}>
+          Your order confirmation has been sent to your email.
+        </p>
+
+        <div style={{
+          background: '#1a1a1a',
+          border: '1px solid #2a2a2a',
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '32px'
+        }}>
+          <div style={{ marginBottom: '16px' }}>
+            <span style={{ color: '#888' }}>Order Number</span>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#f97316' }}>
+              {orderSuccess.orderNumber}
+            </div>
+          </div>
+          <div>
+            <span style={{ color: '#888' }}>Pickup Time</span>
+            <div style={{ fontSize: '20px', fontWeight: 600 }}>
+              {orderSuccess.slotTime}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setOrderSuccess(null)}
+          style={{
+            padding: '14px 32px',
+            background: 'linear-gradient(135deg, #f97316, #ea580c)',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+        >
+          Order More
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -81,9 +209,9 @@ export default function Home() {
             marginBottom: '24px',
             padding: '10px 20px',
             background: 'transparent',
-            border: '1px solid #f4f1e8ff',
+            border: '1px solid #2a2a2a',
             borderRadius: '8px',
-            color: '#f2e2e2ff',
+            color: '#888',
             cursor: 'pointer',
             fontSize: '14px'
           }}
@@ -216,7 +344,7 @@ export default function Home() {
           }}>
             <div>
               <div style={{ fontSize: '14px', opacity: 0.9 }}>{getCartCount()} items</div>
-              <div style={{ fontSize: '20px', fontWeight: 700, marginRight:'10px' }}>₹{getCartTotal()}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700 }}>₹{getCartTotal()}</div>
               {selectedSlot && (
                 <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '2px' }}>
                   Slot #{selectedSlot.id} - {formatTime(selectedSlot.startTime)}
@@ -260,6 +388,8 @@ export default function Home() {
                 </button>
               ) : selectedSlot ? (
                 <button
+                  onClick={placeOrder}
+                  disabled={orderLoading}
                   style={{
                     background: '#fff',
                     padding: '10px 20px',
@@ -267,10 +397,11 @@ export default function Home() {
                     fontWeight: 600,
                     border: 'none',
                     color: '#f97316',
-                    cursor: 'pointer'
+                    cursor: orderLoading ? 'not-allowed' : 'pointer',
+                    opacity: orderLoading ? 0.7 : 1
                   }}
                 >
-                  Place Order
+                  {orderLoading ? 'Placing...' : 'Place Order'}
                 </button>
               ) : (
                 <div style={{
@@ -286,6 +417,8 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
