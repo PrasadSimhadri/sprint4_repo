@@ -99,7 +99,7 @@ foodapp/
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@foodapp.com | admin123 |
+| Admin | leodawson123456789@gmail.com| leod1234 |
 
 
 ## Business Rules
