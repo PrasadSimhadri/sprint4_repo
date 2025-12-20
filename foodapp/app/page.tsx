@@ -17,7 +17,6 @@ interface Slot {
   id: number;
   startTime: string;
   endTime: string;
-  date: string;
   available: number;
 }
 
@@ -390,7 +389,7 @@ export default function Home() {
           }}>
             <div>
               <div style={{ fontSize: '14px', opacity: 0.9 }}>{getCartCount()} items</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, marginRight:'10px' }}>₹{getCartTotal()}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, marginRight: '10px' }}>₹{getCartTotal()}</div>
               {selectedSlot && (
                 <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '2px' }}>
                   Slot #{selectedSlot.id} - {formatTime(selectedSlot.startTime)}
