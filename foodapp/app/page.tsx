@@ -17,6 +17,7 @@ interface Slot {
   id: number;
   startTime: string;
   endTime: string;
+  date: string;
   available: number;
 }
 

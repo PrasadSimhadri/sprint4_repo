@@ -194,10 +194,10 @@ export default function OrdersPage() {
                                         {order.order_number}
                                     </div>
                                     <div style={{ fontSize: '14px', color: '#888' }}>
-                                        Order Date: {formatDate(order.created_at)}
-                                    </div>
-                                    <div style={{ fontSize: '14px', color: '#f97316' }}>
-                                        Pickup Time: {formatTime(order.start_time)}
+                                        {formatDate(order.slot_date)} at {formatTime(order.start_time)}
+
+
+
                                     </div>
                                 </div>
                                 <span style={{

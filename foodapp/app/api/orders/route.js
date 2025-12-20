@@ -106,9 +106,11 @@ export async function POST(request) {
         }
 
         const now = new Date();
-        const currentTime = now.toTimeString().split(' ')[0];
+        const slotDate = new Date(slot.slot_date);
+        const [hours, minutes] = slot.start_time.split(':');
+        slotDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-        if (slot.start_time <= currentTime) {
+        if (slotDate < now) {
             await connection.rollback();
             connection.release();
             return Response.json({

@@ -32,6 +32,11 @@ export default function SlotPicker({ onSelectSlot, selectedSlot }) {
         return `${hour12}:${minutes} ${ampm}`;
     }
 
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
     function getSlotStyles(slot) {
         if (slot.isDisabled) {
             return {
@@ -58,6 +63,13 @@ export default function SlotPicker({ onSelectSlot, selectedSlot }) {
             border: '2px solid #6b8274ff'
         };
     }
+
+    const groupedSlots = slots.reduce((acc, slot) => {
+        const dateKey = slot.date;
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(slot);
+        return acc;
+    }, {});
 
     if (loading) {
         return (
@@ -118,58 +130,79 @@ export default function SlotPicker({ onSelectSlot, selectedSlot }) {
                 </div>
             </div>
 
-            {slots.length === 0 ? (
+            {Object.keys(groupedSlots).length === 0 ? (
                 <p style={{ color: '#888' }}>No slots available</p>
             ) : (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                    gap: '14px'
-                }}>
-                    {slots.map(slot => {
-                        const styles = getSlotStyles(slot);
-                        const isSelected = selectedSlot?.id === slot.id;
+                Object.entries(groupedSlots).map(([date, dateSlots]) => (
+                    <div key={date} style={{ marginBottom: '32px' }}>
+                        <h3 style={{
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            marginBottom: '16px',
+                            color: '#f97316'
+                        }}>
+                            {formatDate(date)}
+                        </h3>
 
-                        return (
-                            <button
-                                key={slot.id}
-                                onClick={() => !slot.isDisabled && onSelectSlot && onSelectSlot(slot)}
-                                disabled={slot.isDisabled}
-                                style={{
-                                    padding: '18px 14px',
-                                    borderRadius: '12px',
-                                    border: isSelected ? '3px solid #fff' : styles.border,
-                                    background: styles.background,
-                                    cursor: slot.isDisabled ? 'not-allowed' : 'pointer',
-                                    opacity: styles.opacity || 1,
-                                    transition: 'all 0.2s ease',
-                                    textAlign: 'center',
-                                    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                                    boxShadow: isSelected ? '0 8px 25px rgba(249, 115, 22, 0.4)' : 'none'
-                                }}
-                            >
-                                <div style={{
-                                    fontSize: '17px',
-                                    fontWeight: 700,
-                                    color: '#fff',
-                                    marginBottom: '6px'
-                                }}>
-                                    {formatTime(slot.startTime)}
-                                </div>
-                                <div style={{
-                                    fontSize: '12px',
-                                    color: 'rgba(255,255,255,0.9)',
-                                    fontWeight: 600
-                                }}>
-                                    {slot.isDisabled
-                                        ? (slot.status === 'full' ? 'FULL' : 'PASSED')
-                                        : `${slot.available} slots left`
-                                    }
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                            gap: '14px'
+                        }}>
+                            {dateSlots.map(slot => {
+                                const styles = getSlotStyles(slot);
+                                const isSelected = selectedSlot?.id === slot.id;
+
+                                return (
+                                    <button
+                                        key={slot.id}
+                                        onClick={() => !slot.isDisabled && onSelectSlot && onSelectSlot(slot)}
+                                        disabled={slot.isDisabled}
+                                        style={{
+                                            padding: '18px 14px',
+                                            borderRadius: '12px',
+                                            border: isSelected ? '3px solid #fff' : styles.border,
+                                            background: styles.background,
+                                            cursor: slot.isDisabled ? 'not-allowed' : 'pointer',
+                                            opacity: styles.opacity || 1,
+                                            transition: 'all 0.2s ease',
+                                            textAlign: 'center',
+                                            transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                                            boxShadow: isSelected ? '0 8px 25px rgba(249, 115, 22, 0.4)' : 'none'
+                                        }}
+                                    >
+                                        <div style={{
+                                            fontSize: '11px',
+                                            color: 'rgba(255,255,255,0.7)',
+                                            marginBottom: '4px',
+                                            fontWeight: 500
+                                        }}>
+                                            Slot #{slot.id}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '17px',
+                                            fontWeight: 700,
+                                            color: '#fff',
+                                            marginBottom: '6px'
+                                        }}>
+                                            {formatTime(slot.startTime)}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: 'rgba(255,255,255,0.9)',
+                                            fontWeight: 600
+                                        }}>
+                                            {slot.isDisabled
+                                                ? (slot.status === 'full' ? 'FULL' : 'PASSED')
+                                                : `${slot.available} slots left`
+                                            }
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))
             )}
         </div>
     );
