@@ -1,12 +1,12 @@
 const mysql = require('mysql2/promise');
+require('dotenv').config({ path: '.env.local' });
 
-// MySQL Database Configuration
 const dbConfig = {
-    host: 'sql12.freesqldatabase.com',
-    user: 'sql12812442',
-    password: 'Hd3credBKB',
-    database: 'sql12812442',
-    port: 3306
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306
 };
 
 async function testConnection() {
@@ -21,11 +21,9 @@ async function testConnection() {
 
         console.log('MySQL connected');
 
-        // Get server info
         const [rows] = await connection.execute('SELECT VERSION() as version');
         console.log('MySQL Version:', rows[0].version);
 
-        // Check connection status
         console.log('Connection ID:', connection.threadId);
         console.log('Connection state: Active');
 
@@ -38,7 +36,7 @@ async function testConnection() {
         console.error('Error Message:', error.message);
 
         if (error.code === 'ER_BAD_DB_ERROR') {
-            console.log('\n  database "food_app" does not exist.');
+            console.log('\n  database does not exist.');
         } else if (error.code === 'ECONNREFUSED') {
             console.log('\n Make sure MySQL server is running');
         } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
