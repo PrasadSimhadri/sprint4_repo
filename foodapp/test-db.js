@@ -2,10 +2,11 @@ const mysql = require('mysql2/promise');
 
 // MySQL Database Configuration
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'Prasad@664',
-    database: 'food_app'
+    host: 'sql12.freesqldatabase.com',
+    user: 'sql12812442',
+    password: 'Hd3credBKB',
+    database: 'sql12812442',
+    port: 3306
 };
 
 async function testConnection() {
