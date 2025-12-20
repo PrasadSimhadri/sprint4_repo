@@ -2,8 +2,6 @@ import { query } from '@/lib/db';
 
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const today = new Date().toISOString().split('T')[0];
     const now = new Date();
     const currentTime = now.toTimeString().split(' ')[0];
 
@@ -26,9 +24,8 @@ export async function GET(request) {
           ELSE FALSE
         END as is_past
       FROM time_slots
-      WHERE slot_date = ?
       ORDER BY start_time
-    `, [currentTime, today]);
+    `, [currentTime]);
 
     const formattedSlots = slots.map(slot => {
       const isPast = slot.is_past === 1;
@@ -44,7 +41,6 @@ export async function GET(request) {
 
       return {
         id: slot.id,
-        date: slot.slot_date,
         startTime: slot.start_time,
         endTime: slot.end_time,
         maxOrders: slot.max_orders,
