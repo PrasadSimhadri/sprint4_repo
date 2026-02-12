@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import ForgotPasswordModal from './ForgotPasswordModal';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
+    const router = useRouter();
     const [mode, setMode] = useState(initialMode);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -45,6 +47,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 if (result.success) {
                     resetForm();
                     onClose();
+                    // Redirect admin users to admin dashboard
+                    if (result.data.user.role === 'admin') {
+                        router.push('/admin');
+                    }
                 } else {
                     setError(result.message);
                 }

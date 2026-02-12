@@ -25,7 +25,7 @@ export async function POST(request) {
         const hashedPassword = await hashPassword(password);
 
         const result = await query(
-            'INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?) RETURNING id',
             [name, email, hashedPassword, phone || null, 'customer']
         );
 
@@ -34,7 +34,7 @@ export async function POST(request) {
         return Response.json({
             success: true,
             message: 'Registration successful! Welcome email sent.',
-            data: { id: result.insertId, name, email, role: 'customer' }
+            data: { id: result[0].id, name, email, role: 'customer' }
         });
 
     } catch (error) {

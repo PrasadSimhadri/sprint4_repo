@@ -31,7 +31,7 @@ export async function GET(request) {
     `, [currentTime, today]);
 
     const formattedSlots = slots.map(slot => {
-      const isPast = slot.is_past === 1;
+      const isPast = slot.is_past === true || slot.is_past === 1;
       const isFull = slot.current_orders >= slot.max_orders;
 
       let displayStatus = slot.computed_status;

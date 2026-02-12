@@ -156,11 +156,11 @@ export async function POST(request) {
 
         const [orderResult] = await connection.execute(
             `INSERT INTO orders (order_number, user_id, slot_id, total_amount, status, payment_status, special_instructions, cancellation_deadline)
-             VALUES (?, ?, ?, ?, 'confirmed', 'paid', ?, ?)`,
+             VALUES (?, ?, ?, ?, 'confirmed', 'paid', ?, ?) RETURNING id`,
             [orderNumber, user.id, slotId, totalAmount, specialInstructions || null, cancellationDeadline]
         );
 
-        const orderId = orderResult.insertId;
+        const orderId = orderResult[0].id;
 
         for (const item of orderItems) {
             await connection.execute(

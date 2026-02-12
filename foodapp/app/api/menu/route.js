@@ -45,14 +45,14 @@ export async function POST(request) {
 
         const result = await query(
             `INSERT INTO menu_items (category_id, name, description, price, preparation_time, is_vegetarian, is_available)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [category_id || 1, name, description || '', price, preparation_time || 15, is_vegetarian ? 1 : 0, is_available ? 1 : 0]
+       VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+            [category_id || 1, name, description || '', price, preparation_time || 15, is_vegetarian ? true : false, is_available !== false]
         );
 
         return Response.json({
             success: true,
             message: 'Dish added',
-            data: { id: result.insertId }
+            data: { id: result[0].id }
         });
 
     } catch (error) {

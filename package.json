@@ -1,0 +1,8 @@
+{
+    "name": "sprint4-repo",
+    "private": true,
+    "description": "Root package for workspace - stops module resolution from going too high",
+    "workspaces": [
+        "foodapp"
+    ]
+}
