@@ -11,7 +11,7 @@ export async function POST(request) {
       FROM orders o
       JOIN time_slots ts ON o.slot_id = ts.id
       WHERE o.status IN ('confirmed', 'in_making')
-        AND ts.slot_date = CURDATE()
+        AND ts.slot_date = CURRENT_DATE
     `);
 
         for (const order of orders) {

@@ -170,11 +170,8 @@ export async function POST(request) {
             );
         }
 
-        await connection.execute(
-            'UPDATE time_slots SET current_orders = current_orders + 1 WHERE id = ?',
-            [slotId]
-        );
-
+        // Note: current_orders was already incremented by /api/slots/reserve when slot was selected
+        // Just update the status based on current count
         const [updatedSlot] = await connection.execute(
             'SELECT current_orders, max_orders FROM time_slots WHERE id = ?',
             [slotId]
