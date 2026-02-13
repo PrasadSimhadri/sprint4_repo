@@ -1,6 +1,6 @@
 # FoodApp - Food Ordering Application
 
-A full stack food ordering application built with Next.js and MySQL.
+A full stack food ordering application built with Next.js and Supabase (PostgreSQL).
 
 ## Tech Stack
 
@@ -8,7 +8,7 @@ A full stack food ordering application built with Next.js and MySQL.
 |-------|------------|
 | Frontend | React.js, Next.js |
 | Backend | Next.js API Routes |
-| Database | MySQL |
+| Database | Supabase (PostgreSQL) |
 | Auth | JWT and bcryptjs |
 | Email | Nodemailer  |
 | Styling | Tailwind and Inline CSS |
@@ -22,12 +22,12 @@ A full stack food ordering application built with Next.js and MySQL.
 - **Order Cancellation** - Cancel within 15 mins of pickup
 - **Admin Dashboard** - Manage orders, Update status, Edit menu
 - **Email Notifications** - Welcome email, Order confirmation
-- **Race Condition Handling** - MySQL transactions with row locking
+- **Race Condition Handling** - PostgreSQL transactions with row locking
 
 ## Prerequisites
 
 - Node.js 18+
-- MySQL 8.x
+- Supabase account
 - Gmail account (for email notifications)
 
 ## Installation
@@ -43,19 +43,19 @@ cd foodapp
 npm install
 ```
 
-3. **Configure database**
+3. **Configure Supabase**
 
-Create MySQL database:
-```sql
-CREATE DATABASE food_app;
+- Create a new project at [supabase.com](https://supabase.com)
+- Go to **Settings > Database > Connection string (URI)**
+- Copy the connection string and add it to `.env.local`:
 ```
-
-Update credentials in `lib/db.js` if needed.
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+```
 
 4. **Run database schema**
-```bash
-node run-schema.js
-```
+
+- Go to **SQL Editor** in Supabase Dashboard
+- Copy and run the contents of `database/supabase-schema.sql`
 
 5. **Start development server**
 ```bash
@@ -89,10 +89,10 @@ foodapp/
 │   └── AuthContext.jsx   # Authentication state
 ├── lib/
 │   ├── auth.js           # JWT utilities
-│   ├── db.js             # MySQL connection
+│   ├── db.js             # Supabase PostgreSQL connection
 │   └── email.js          # Nodemailer setup
 └── database/
-    └── schema.sql        # Database schema
+    └── supabase-schema.sql  # PostgreSQL schema for Supabase
 ```
 
 ## Default Credentials
@@ -110,14 +110,11 @@ foodapp/
   - 15 mins before → "In Making"
   - 2 mins before → "Ready"
 
-## Environment Variables (Optional)
+## Environment Variables
 
 Create `.env.local`:
 ```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=food_app
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 JWT_SECRET=your-secret-key
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASSWORD=your-app-password
@@ -129,5 +126,4 @@ EMAIL_PASSWORD=your-app-password
 |---------|-------------|
 | `npm run dev` | Start development server |
 | `npm start` | Start production server |
-| `node run-schema.js` | Initialize database |
-| `node test-db.js` | Test database connection |
+| `node test-supabase.js` | Test Supabase connection |
