@@ -3,9 +3,6 @@ import { query } from '@/lib/db';
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0];
 
     // Get slots: 
     // - Future dates: show all slots
@@ -26,9 +23,15 @@ export async function GET(request) {
           ELSE 'available'
         END as computed_status
       FROM time_slots
-      WHERE (slot_date > ? OR (slot_date = ? AND start_time > ?))
+      WHERE 
+  (slot_date > (NOW() AT TIME ZONE 'Asia/Kolkata')::date)
+  OR 
+  (
+    slot_date = (NOW() AT TIME ZONE 'Asia/Kolkata')::date
+    AND start_time > (NOW() AT TIME ZONE 'Asia/Kolkata')::time
+  )
       ORDER BY slot_date, start_time
-    `, [today, today, currentTime]);
+    `,);
 
     const formattedSlots = slots.map(slot => {
       const isFull = slot.current_orders >= slot.max_orders;
