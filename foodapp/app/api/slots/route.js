@@ -4,9 +4,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const now = new Date();
+    const today = now.toISOString().split('T')[0];
     const currentTime = now.toTimeString().split(' ')[0];
 
-    // Get all slots, ignore date - only filter by current time
+    // Get slots: 
+    // - Future dates: show all slots
+    // - Today: only show slots where start_time > current time
+    // - Past dates: don't show at all
     const slots = await query(`
       SELECT 
         id,
@@ -22,9 +26,9 @@ export async function GET(request) {
           ELSE 'available'
         END as computed_status
       FROM time_slots
-      WHERE start_time > ?
-      ORDER BY start_time
-    `, [currentTime]);
+      WHERE (slot_date > ? OR (slot_date = ? AND start_time > ?))
+      ORDER BY slot_date, start_time
+    `, [today, today, currentTime]);
 
     const formattedSlots = slots.map(slot => {
       const isFull = slot.current_orders >= slot.max_orders;
